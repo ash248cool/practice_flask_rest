@@ -40,10 +40,71 @@ class ProductSchema(ma.Schema):
 product_schema = ProductSchema()
 products_schema = ProductSchema(many=True)
 
+
+# create a product
+@app.route('/product', methods=['POST'])
+def add_product():
+    name = request.json['name']
+    description = request.json['description']
+    price = request.json['price']
+    qty = request.json['qty']
+
+    new_product = Product(name, description, price, qty)
+    db.session.add(new_product)
+    db.session.commit()
+
+    return product_schema.jsonify(new_product)
+
+
+# Get all products
+@app.route('/product', methods=['GET'])
+def get_products():
+    all_product = Product.query.all()
+    result = products_schema.dump(all_product)
+    return jsonify(result)
+
+
+#  Creating a single product
+@app.route('/product/<id>', methods=['GET'])
+def get_product(id):
+    product = Product.query.get(id)
+    result = product_schema.jsonify(product)
+    return result
+
+
+# Update a product
+@app.route('/product/<id>', methods=['PUT'])
+def update_product(id):
+    product = Product.query.get(id)
+    name = request.json['name']
+    description = request.json['description']
+    price = request.json['price']
+    qty = request.json['qty']
+
+    product.name = name
+    product.description = description
+    product.price = price
+    product.qty = qty
+
+    db.session.commit()
+
+    return product_schema.jsonify(product)
+
+
+# Delete API
+@app.route('/product/<id>', methods=['DELETE'])
+def delete_product(id):
+    product = Product.query.get(id)
+    db.session.delete(product)
+    db.session.commit()
+
+    return product_schema.jsonify(product)
+
+
 # Hello World API
-# @app.route('/', methods=['GET'])
-# def get():
-#     return jsonify({'msg': 'Hello World'})
+@app.route('/', methods=['GET'])
+def get():
+    return jsonify({'msg': 'Hello World'})
 
 
 # Run Server
